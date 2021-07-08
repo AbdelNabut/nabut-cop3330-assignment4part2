@@ -8,6 +8,8 @@ package ucf.assignments;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 
+import java.io.File;
+
 public class TaskListController {
 
 
@@ -45,6 +47,17 @@ public class TaskListController {
     public void descendingButtonClicked(ActionEvent actionEvent) {
         descendSort();
     }
+
+    @FXML
+    public void saveListButtonClicked(ActionEvent actionEvent) {
+        saveList();
+    }
+
+    @FXML
+    public void loadListButtonClicked(ActionEvent actionEvent) {
+        loadList();
+    }
+
 
     public static void showToDoLists() {
         // set scene to ToDoList scene
@@ -87,6 +100,20 @@ public class TaskListController {
         // sort the ToDoList in descending order
         // return ToDoList
         return new ToDoList();
+    }
+
+    public File saveList(String fileName) {
+        // opens file browser
+        // outputs file to destination
+        // returns file
+        return new File(fileName);
+    }
+
+    public File loadList(File file) {
+        // opens file browser
+        // reads selected file
+        // returns file
+        return file;
     }
 
 }
