@@ -36,12 +36,12 @@
             <Font name="Apple Symbols" size="47.0" />
          </font>
       </Label>
-      <TableView fx:id="taskTable" prefHeight="289.0" prefWidth="580.0" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.rowSpan="4" GridPane.valignment="CENTER">
+      <TableView fx:id="table" prefHeight="289.0" prefWidth="580.0" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.rowSpan="4" GridPane.valignment="CENTER">
         <columns>
-          <TableColumn prefWidth="91.0" text="Completed?" />
-          <TableColumn prefWidth="195.0" text="Description" />
-            <TableColumn prefWidth="191.0" text="Due Date" />
-            <TableColumn prefWidth="101.0" text="Remove" />
+          <TableColumn fx:id="completedColumn" prefWidth="91.0" text="Completed?" />
+          <TableColumn fx:id="descriptionColumn" prefWidth="195.0" text="Description" />
+            <TableColumn fx:id="dueDateColumn" prefWidth="191.0" text="Due Date" />
+            <TableColumn fx:id="removeColumn" prefWidth="101.0" text="Remove" />
         </columns>
       </TableView>
       <Button mnemonicParsing="false" onAction="#saveListButtonClicked" prefHeight="28.0" prefWidth="30.0" GridPane.halignment="LEFT">

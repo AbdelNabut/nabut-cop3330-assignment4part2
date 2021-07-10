@@ -5,18 +5,35 @@
 
 package ucf.assignments;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.CheckBoxTableCell;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.net.URL;
+import java.util.Date;
+import java.util.ResourceBundle;
 
-public class TaskListController {
+public class TaskListController implements Initializable {
 
+    //private ArrayList<Task> taskList = new ArrayList();
 
-    @FXML
-    public void allListsButtonClicked(ActionEvent actionEvent) {
-        showToDoLists();
-    }
+    @FXML private TableView<Task> table;
+    @FXML private TableColumn<Task, String> descriptionColumn;
+    @FXML private TableColumn<Task, Boolean> completedColumn;
+    @FXML private TableColumn<Task, Date> dueDateColumn;
+    @FXML private TableColumn<Task, Date> removeColumn;
 
     @FXML
     public void incompleteTasksButtonClicked(ActionEvent actionEvent) {
@@ -50,18 +67,17 @@ public class TaskListController {
 
     @FXML
     public void saveListButtonClicked(ActionEvent actionEvent) {
-        saveList();
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Select output destination");
+        File file = fileChooser.showSaveDialog(new Stage());
+        saveList(file);
     }
 
     @FXML
     public void loadListButtonClicked(ActionEvent actionEvent) {
-        loadList();
+        //loadList();
     }
 
-
-    public static void showToDoLists() {
-        // set scene to ToDoList scene
-    }
 
     public static void showIncompleteTasks() {
         // loop through each task
@@ -82,6 +98,7 @@ public class TaskListController {
     }
 
     public void createTask() {
+        tasks.add(new Task());
         // create new Task object
         // initialize Task object
         // add Task object to ToDoList
@@ -102,11 +119,18 @@ public class TaskListController {
         return new ToDoList();
     }
 
-    public File saveList(String fileName) {
+    public File saveList(File file) {
         // opens file browser
         // outputs file to destination
         // returns file
-        return new File(fileName);
+        try {
+            PrintWriter printWriter = new PrintWriter(file);
+            printWriter.write("test");
+            printWriter.close();
+        } catch(FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return file;
     }
 
     public File loadList(File file) {
@@ -116,4 +140,59 @@ public class TaskListController {
         return file;
     }
 
+    ObservableList<Task> tasks = FXCollections.observableArrayList();
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        completedColumn.setCellValueFactory(new PropertyValueFactory<Task, Boolean>("completed"));
+        completedColumn.setCellFactory( lambda -> new CheckBoxTableCell<>());
+        completedColumn.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<Task, Boolean>>() {
+            @Override
+            public void handle(TableColumn.CellEditEvent<Task, Boolean> event) {
+                Task task = event.getRowValue();
+                task.setCompleted(event.getNewValue());
+                System.out.println("Completed: " + task.getCompleted());
+            }
+        });
+
+        descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
+        descriptionColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        descriptionColumn.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<Task, String>>() {
+            @Override
+            public void handle(TableColumn.CellEditEvent<Task, String> event) {
+                Task task = event.getRowValue();
+                task.setDescription(event.getNewValue());
+            }
+        });
+
+        dueDateColumn.setCellValueFactory(new PropertyValueFactory<>("dueDate"));
+
+        //descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("remove"));
+        /*removeColumn.setCellValueFactory(
+                param -> new ReadOnlyObjectWrapper<>(param.getValue())
+        );
+        removeColumn.setCellFactory(param -> new TableCell() {
+            private final Button deleteButton = new Button("Unfriend");
+
+            //@Override
+            protected void updateItem(Task task, boolean empty) {
+                super.updateItem(task, empty);
+
+                if (task == null) {
+                    setGraphic(null);
+                    return;
+                }
+
+                setGraphic(deleteButton);
+                deleteButton.setOnAction(
+                        event -> getTableView().getItems().remove(task)
+                );
+            }
+        });*/
+
+        //dueDateColumn.setCellFactory(DateCell);
+        table.setItems(tasks);
+        table.setEditable(true);
+        //table.getColumns().setAll(descriptionColumn, completedColumn, dueDateColumn);
+    }
 }

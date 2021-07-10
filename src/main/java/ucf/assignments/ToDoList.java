@@ -12,6 +12,10 @@ public class ToDoList {
     private String name;
     private ArrayList<Task> tasks;
 
+    public void addTask() {
+        Task task = new Task();
+        this.tasks.add(task);
+    }
     public void addTask(String description, boolean completed, Date dueDate) {
         // create new Task
         // initialize Task with parameter variables

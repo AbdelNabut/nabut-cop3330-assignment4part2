@@ -8,12 +8,15 @@ package ucf.assignments;
 import java.util.Date;
 
 public class Task {
-    private String description;
-    private boolean completed = false;
-    private Date dueDate;
+    String description;
+    boolean completed;
+    Date dueDate;
 
     public Task() {
         // initialize task values
+        this.description = "new task";
+        this.completed = false;
+        this.dueDate = null;
     }
 
     public Date getDueDate() {
@@ -32,7 +35,7 @@ public class Task {
         this.description = description;
     }
 
-    public boolean isCompleted() {
+    public boolean getCompleted() {
         return completed;
     }
 

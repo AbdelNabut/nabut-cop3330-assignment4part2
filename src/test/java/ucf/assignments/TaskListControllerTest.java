@@ -68,4 +68,12 @@ class TaskListControllerTest {
         // assert that the function return = the new ToDoList object.
     }
 
+    @Test
+    void saveListButtonClicked() {
+        // create new File object, firstFile
+        // write 'test' to file
+        // save the file
+        // create a second File object, secondFile
+        // assert that saveList(secondFile, 'test') == firstFile
+    }
 }
