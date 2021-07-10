@@ -14,7 +14,7 @@ class ToDoList {
 
 class Task {
     -description: String
-    -completed: boolean
+    -CheckBox: boolean
     -dueDate: Date
     getDescription()
     setDescription()
@@ -22,6 +22,7 @@ class Task {
     setDueDate()
     getCompleted()
     setCompleted()
+    completedProperty()
 }
 
 class ToDoListController {

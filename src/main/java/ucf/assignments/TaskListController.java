@@ -5,8 +5,11 @@
 
 package ucf.assignments;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -24,6 +27,7 @@ import java.io.PrintWriter;
 import java.net.URL;
 import java.util.Date;
 import java.util.ResourceBundle;
+import java.util.function.Predicate;
 
 public class TaskListController implements Initializable {
 
@@ -33,7 +37,6 @@ public class TaskListController implements Initializable {
     @FXML private TableColumn<Task, String> descriptionColumn;
     @FXML private TableColumn<Task, Boolean> completedColumn;
     @FXML private TableColumn<Task, Date> dueDateColumn;
-    @FXML private TableColumn<Task, Date> removeColumn;
 
     @FXML
     public void incompleteTasksButtonClicked(ActionEvent actionEvent) {
@@ -63,6 +66,19 @@ public class TaskListController implements Initializable {
     @FXML
     public void descendingButtonClicked(ActionEvent actionEvent) {
         descendSort();
+    }
+
+    @FXML
+    public void deleteButtonClicked(ActionEvent actionEvent) {
+        Task task = table.getSelectionModel().getSelectedItem();
+        table.getItems().removeAll(task);
+        deleteTask(task);
+    }
+
+    @FXML
+    public void clearListButtonClicked(ActionEvent actionEvent) {
+        table.getItems().clear();
+        clearList();
     }
 
     @FXML
@@ -98,12 +114,36 @@ public class TaskListController implements Initializable {
     }
 
     public void createTask() {
-        tasks.add(new Task());
         // create new Task object
         // initialize Task object
         // add Task object to ToDoList
         // return ToDoList
+        Task task = new Task();
+        task.completedProperty().addListener(new ChangeListener(){
+            @Override public void changed(ObservableValue o, Object oldVal,
+                                          Object newVal){
+                System.out.println("Boolean Value: " + task.getCompleted());
+            }
+        });
+        tasks.add(task);
     }
+
+    private ObservableList<Task> deleteTask(Task task) {
+        // remove task from list
+        // return to-do list
+        tasks.remove(task);
+        return tasks;
+    }
+
+    public ObservableList<Task> clearList() {
+        // loop through every item in the to-do list
+        // remove item from list
+        // return empty list
+        for(Task task : tasks)
+            tasks.remove(task);
+        return tasks;
+    }
+
 
     public ToDoList ascendSort() {
         // create a new comparator with variable date
@@ -141,58 +181,28 @@ public class TaskListController implements Initializable {
     }
 
     ObservableList<Task> tasks = FXCollections.observableArrayList();
+    FilteredList<Task> filteredList = new FilteredList<>(tasks);
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         completedColumn.setCellValueFactory(new PropertyValueFactory<Task, Boolean>("completed"));
         completedColumn.setCellFactory( lambda -> new CheckBoxTableCell<>());
-        completedColumn.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<Task, Boolean>>() {
-            @Override
-            public void handle(TableColumn.CellEditEvent<Task, Boolean> event) {
-                Task task = event.getRowValue();
-                task.setCompleted(event.getNewValue());
-                System.out.println("Completed: " + task.getCompleted());
-            }
-        });
 
         descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
         descriptionColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        descriptionColumn.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<Task, String>>() {
-            @Override
-            public void handle(TableColumn.CellEditEvent<Task, String> event) {
-                Task task = event.getRowValue();
-                task.setDescription(event.getNewValue());
-            }
+        descriptionColumn.setOnEditCommit(event -> {
+            Task task = event.getRowValue();
+            task.setDescription(event.getNewValue());
         });
-
         dueDateColumn.setCellValueFactory(new PropertyValueFactory<>("dueDate"));
+        table.setItems(filteredList);
 
-        //descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("remove"));
-        /*removeColumn.setCellValueFactory(
-                param -> new ReadOnlyObjectWrapper<>(param.getValue())
-        );
-        removeColumn.setCellFactory(param -> new TableCell() {
-            private final Button deleteButton = new Button("Unfriend");
-
-            //@Override
-            protected void updateItem(Task task, boolean empty) {
-                super.updateItem(task, empty);
-
-                if (task == null) {
-                    setGraphic(null);
-                    return;
+        filteredList.setPredicate(
+                t -> {
+                    if(t.getCompleted().booleanValue())
+                        return false; // or true
+                    return true;
                 }
-
-                setGraphic(deleteButton);
-                deleteButton.setOnAction(
-                        event -> getTableView().getItems().remove(task)
-                );
-            }
-        });*/
-
-        //dueDateColumn.setCellFactory(DateCell);
-        table.setItems(tasks);
-        table.setEditable(true);
-        //table.getColumns().setAll(descriptionColumn, completedColumn, dueDateColumn);
+        );
     }
 }
