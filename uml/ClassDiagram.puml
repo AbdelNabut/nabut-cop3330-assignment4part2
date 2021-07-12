@@ -58,6 +58,18 @@ class TaskListController{
     ascendSort()
     descendSort()
 
+}
+
+class Serializer {
+    Serialize()
+}
+
+class Deserializer {
+    Deserialize()
+}
+
+class DatePickerCell {
++ DatePickerCell()
 
 }
 
@@ -70,8 +82,10 @@ ToDoListController-ToDoList
 ToDoList-Task
 
 
-TaskListController -ToDoListApp
-TaskListController-Task
+TaskListController - ToDoListApp
+TaskListController - Task
+TaskListController - Serializer
+TaskListController - Deserializer
 
 
 @enduml

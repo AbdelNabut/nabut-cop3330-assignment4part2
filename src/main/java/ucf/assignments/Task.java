@@ -14,23 +14,41 @@ import javafx.scene.control.CheckBox;
 import java.util.Date;
 
 public class Task {
-    String description;
-    BooleanProperty completed = new SimpleBooleanProperty();
-    Date dueDate;
-    Button deleteButton;
+    private String filter;
+    private String description;
+    private BooleanProperty completed;
+
+    private String dueDate;
 
     public Task() {
         // initialize task values
-        this.description = "new task";
+        this.description = "click to edit";
         this.completed = new SimpleBooleanProperty();
         this.dueDate = null;
+        this.filter = "all";
     }
 
-    public Date getDueDate() {
+    public Task(String description, Boolean completed, String dueDate) {
+        // initialize task values
+        this.description = description;
+        this.completed = new SimpleBooleanProperty(completed);
+        this.dueDate = dueDate;
+        this.filter = "all";
+    }
+
+    public String getFilter() {
+        return filter;
+    }
+
+    public void setFilter(String filter) {
+        this.filter = filter;
+    }
+
+    public String getDueDate() {
         return dueDate;
     }
 
-    public void setDueDate(Date dueDate) {
+    public void setDueDate(String dueDate) {
         this.dueDate = dueDate;
     }
 

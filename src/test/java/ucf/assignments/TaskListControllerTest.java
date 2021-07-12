@@ -5,6 +5,8 @@
 
 package ucf.assignments;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -12,8 +14,12 @@ import static org.junit.jupiter.api.Assertions.*;
 class TaskListControllerTest {
 
     @Test
-    void allListsButtonClicked() {
-        // no test, button return to previous display.
+    void createTask() {
+        // create new TaskListController
+        // assert that creating a task brings the initial array to a size of 1
+
+        TaskListController controller = new TaskListController();
+        assertEquals(1, controller.createTask().size());
     }
 
     @Test
@@ -22,6 +28,8 @@ class TaskListControllerTest {
         // initialize the list view to show all items
         // call the showIncompleteTasks function
         // assert that displayed lists = only the incomplete tasks
+        TaskListController controller = new TaskListController();
+        assertEquals("incomplete", controller.showIncompleteTasks());
     }
 
     @Test
@@ -30,6 +38,8 @@ class TaskListControllerTest {
         // initialize the list view to show all tasks
         // call the showCompletedTasks function
         // assert that displayed lists = only the complete tasks
+        TaskListController controller = new TaskListController();
+        assertEquals("complete", controller.showCompleteTasks());
     }
 
     @Test
@@ -38,14 +48,8 @@ class TaskListControllerTest {
         // initialize the list view to show only the incomplete/complete tasks
         // call the showAllTasks function
         // assert that displayed lists = shows all the items.
-    }
-
-    @Test
-    void createTask() {
-        // create new Task object
-        // initialize the Task object with x values
-        // call the createTask function with same x values in parameter
-        // assert that the function return = the new Task object.
+        TaskListController controller = new TaskListController();
+        assertEquals("all", controller.showAllTasks());
     }
 
     @Test
@@ -55,7 +59,17 @@ class TaskListControllerTest {
         // create a test ToDoList
         // initialize test ToDoList with same tasks in any order except ascending order
         // call the ascendSort function on the test ToDoList
-        // assert that the function return = the new ToDoList object.
+        // assert that the function return at index 0 = the latest date
+        TaskListController controller = new TaskListController();
+        ObservableList<Task> taskList = FXCollections.observableArrayList(
+                new Task("desc 1", true, "2021-06-02"),
+                new Task("desc 1", true, "2021-06-01"),
+                new Task("desc 1", true, "2021-06-03")
+        );
+        controller.setTasks(taskList);
+        ObservableList<Task> sortedList = controller.ascendSort();
+        Task task = sortedList.get(0);
+        assertEquals("2021-06-01", task.getDueDate());
     }
 
     @Test
@@ -65,7 +79,17 @@ class TaskListControllerTest {
         // create a test ToDoList
         // initialize test ToDoList with same tasks in any order except descending order
         // call the descendSort function on the test ToDoList
-        // assert that the function return = the new ToDoList object.
+        // assert that the function return at index 0 = the earliest date
+        TaskListController controller = new TaskListController();
+        ObservableList<Task> taskList = FXCollections.observableArrayList(
+                new Task("desc 1", true, "2021-06-02"),
+                new Task("desc 1", true, "2021-06-01"),
+                new Task("desc 1", true, "2021-06-03")
+        );
+        controller.setTasks(taskList);
+        ObservableList<Task> sortedList = controller.descendSort();
+        Task task = sortedList.get(0);
+        assertEquals("2021-06-03", task.getDueDate());
     }
 
     @Test

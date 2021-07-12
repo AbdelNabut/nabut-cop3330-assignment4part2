@@ -5,13 +5,13 @@
 
 package ucf.assignments;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -20,31 +20,37 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.Callback;
+
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.io.Reader;
 import java.net.URL;
-import java.util.Date;
-import java.util.ResourceBundle;
-import java.util.function.Predicate;
+import java.nio.file.Files;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.util.*;
 
 public class TaskListController implements Initializable {
 
-    //private ArrayList<Task> taskList = new ArrayList();
+    public static String filter = "all";
 
-    @FXML private TableView<Task> table;
+    @FXML public  TableView<Task> table;
     @FXML private TableColumn<Task, String> descriptionColumn;
     @FXML private TableColumn<Task, Boolean> completedColumn;
     @FXML private TableColumn<Task, Date> dueDateColumn;
 
     @FXML
     public void incompleteTasksButtonClicked(ActionEvent actionEvent) {
+        filter = "incomplete";
         showIncompleteTasks();
     }
 
     @FXML
     public void completedTasksButtonClicked(ActionEvent actionEvent) {
+        filter = "completed";
         showCompleteTasks();
     }
 
@@ -60,12 +66,13 @@ public class TaskListController implements Initializable {
 
     @FXML
     public void ascendingButtonClicked(ActionEvent actionEvent) {
-        ascendSort();
+
+        table.setItems(ascendSort());
     }
 
     @FXML
     public void descendingButtonClicked(ActionEvent actionEvent) {
-        descendSort();
+        table.setItems(descendSort());
     }
 
     @FXML
@@ -74,7 +81,6 @@ public class TaskListController implements Initializable {
         table.getItems().removeAll(task);
         deleteTask(task);
     }
-
     @FXML
     public void clearListButtonClicked(ActionEvent actionEvent) {
         table.getItems().clear();
@@ -91,41 +97,49 @@ public class TaskListController implements Initializable {
 
     @FXML
     public void loadListButtonClicked(ActionEvent actionEvent) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Select output destination");
+        File file = fileChooser.showOpenDialog(new Stage());
+        if (file != null)
+            loadList(file);
         //loadList();
     }
 
 
-    public static void showIncompleteTasks() {
-        // loop through each task
-        // check if task is not complete
-        // output task to taskTable
+    public String showIncompleteTasks() {
+        // set filter to incomplete
+        // update table
+        filter = "incomplete";
+        ObservableList<Task> taskList = tasks.filtered(task -> !task.getCompleted());
+        if (table != null) table.setItems(taskList);
+        return filter;
     }
 
-    public static void showCompleteTasks() {
-        // loop through each task
-        // check if task is complete
-        // output task to taskTable
+    public String showCompleteTasks() {
+        // set filter to all
+        // update table
+        filter = "complete";
+        ObservableList<Task> taskList = tasks.filtered(task -> task.getCompleted());
+        if (table != null) table.setItems(taskList);
+        return filter;
     }
 
-    public static void showAllTasks() {
-        // loop through each task
-        // check if task is complete
-        // output task to taskTable
+    public String showAllTasks() {
+        // set filter to all
+        // update table
+        filter = "all";
+        if(this.table != null) this.table.setItems(this.tasks);
+        return filter;
     }
 
-    public void createTask() {
+    public ObservableList<Task> createTask() {
         // create new Task object
         // initialize Task object
         // add Task object to ToDoList
         // return ToDoList
         Task task = new Task();
-        task.completedProperty().addListener(new ChangeListener(){
-            @Override public void changed(ObservableValue o, Object oldVal,
-                                          Object newVal){
-                System.out.println("Boolean Value: " + task.getCompleted());
-            }
-        });
         tasks.add(task);
+        return tasks;
     }
 
     private ObservableList<Task> deleteTask(Task task) {
@@ -136,27 +150,59 @@ public class TaskListController implements Initializable {
     }
 
     public ObservableList<Task> clearList() {
-        // loop through every item in the to-do list
-        // remove item from list
-        // return empty list
-        for(Task task : tasks)
-            tasks.remove(task);
+        // clear tasks
+        tasks.clear();
         return tasks;
     }
 
 
-    public ToDoList ascendSort() {
+    public ObservableList<Task> ascendSort() {
         // create a new comparator with variable date
         // sort the ToDoList in ascending order
-        // return ToDoList
-        return new ToDoList();
+//        ObservableList<Task> taskList = this.tasks.sorted((a, b) -> {
+//            return LocalDate.parse(a.getDueDate()).compareTo(LocalDate.parse(b.getDueDate()));
+//        });
+
+        ObservableList<Task> taskList = this.tasks.sorted(
+                Comparator.comparing((task) -> {
+                    return task.getDueDate() != null && !task.getDueDate().isEmpty() ? LocalDate.parse(task.getDueDate()) : null;
+                }, Comparator.nullsLast(Comparator.naturalOrder()))
+        );
+        return taskList;
+
     }
 
-    public ToDoList descendSort() {
+    public ObservableList<Task> descendSort() {
         // create a new comparator with variable date
         // sort the ToDoList in descending order
         // return ToDoList
-        return new ToDoList();
+//        ObservableList<Task> taskList = this.tasks.sorted((a, b) -> {
+//            if(a.getDueDate() != null && b.getDueDate() == null) {
+//                return 1;
+//            } else if (a.getDueDate() == null && b.getDueDate() != null) {
+//                return -1;
+//            }
+//            if (a.getDueDate() == null) {
+//                return b.getDueDate() == null ? 0 : 1;
+//            }
+//
+//            if (b.getDueDate() == null) {
+//                return 1;
+//            }
+//
+//            return LocalDate.parse(a.getDueDate()).compareTo(LocalDate.parse(b.getDueDate()));
+//
+//        });
+        ObservableList<Task> taskList = this.tasks.sorted(
+                Comparator.comparing((task) -> {
+                    return task.getDueDate() != null && !task.getDueDate().isEmpty() ? LocalDate.parse(task.getDueDate()) : null;
+                }, Comparator.nullsLast(Comparator.reverseOrder()))
+        );
+        return taskList;
+    }
+
+    public void setTasks(ObservableList<Task> tasks) {
+        this.tasks = tasks;
     }
 
     public File saveList(File file) {
@@ -165,7 +211,10 @@ public class TaskListController implements Initializable {
         // returns file
         try {
             PrintWriter printWriter = new PrintWriter(file);
-            printWriter.write("test");
+            com.google.gson.Gson gson = new GsonBuilder().registerTypeAdapter(Task.class, new Serializer())
+                        .setPrettyPrinting().create();
+            String taskJson = gson.toJson(tasks.toArray());
+            printWriter.write(taskJson);
             printWriter.close();
         } catch(FileNotFoundException e) {
             e.printStackTrace();
@@ -174,14 +223,31 @@ public class TaskListController implements Initializable {
     }
 
     public File loadList(File file) {
-        // opens file browser
-        // reads selected file
-        // returns file
+        // create GSON instance
+        // create reader
+        // convert JSON array to ObservableArray of tasks
+        // return ObservableArray
+
+        try {
+            Reader reader = Files.newBufferedReader(file.toPath());
+            Gson gson = new GsonBuilder()
+                    .registerTypeAdapter(Task.class, new Deserializer())
+                    .create();
+            List<Task> list = gson.fromJson(reader, new TypeToken<ArrayList<Task>>() {}.getType());
+            tasks = FXCollections.observableArrayList(list);
+            this.table.setItems(tasks);
+            reader.close();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
         return file;
     }
 
-    ObservableList<Task> tasks = FXCollections.observableArrayList();
-    FilteredList<Task> filteredList = new FilteredList<>(tasks);
+    static ObservableList<Task> tasks = FXCollections.observableArrayList();
+    FilteredList<Task> filteredList = new FilteredList<>(tasks, t -> true);
+
+
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -194,15 +260,81 @@ public class TaskListController implements Initializable {
             Task task = event.getRowValue();
             task.setDescription(event.getNewValue());
         });
-        dueDateColumn.setCellValueFactory(new PropertyValueFactory<>("dueDate"));
+
+        //sortedList.comparatorProperty().bind(table.comparatorProperty());
         table.setItems(filteredList);
 
-        filteredList.setPredicate(
-                t -> {
-                    if(t.getCompleted().booleanValue())
-                        return false; // or true
-                    return true;
-                }
-        );
+        Callback cellDateFactory = new Callback<TableColumn, TableCell>() {
+            public TableCell call(TableColumn col) {
+                return new DatePickerCell(col);
+            }
+        };
+
+        dueDateColumn.setCellValueFactory(new PropertyValueFactory<>("dueDate"));
+        dueDateColumn.setCellFactory(cellDateFactory);
+        dueDateColumn.setEditable(true);
+        dueDateColumn.setOnEditCommit(event -> {
+            Task task = event.getRowValue();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            task.setDueDate(sdf.format(event.getNewValue()));
+        });
     }
+}
+
+class DatePickerCell extends  TableCell<Task, String> {
+    private DatePicker datePicker;
+    private TableColumn column;
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+    public DatePickerCell(TableColumn column) {
+        // instantiate new DatePicker
+        // edit setOnAction behavior
+        // override methods to update date cell appropriately
+        // reflect date cell with model date variable
+
+        super();
+        this.column = column;
+        this.datePicker = new DatePicker();
+        this.datePicker.setOnAction(e -> {
+
+
+            if (this.datePicker.getValue() != null) {
+                commitEdit(this.datePicker.getValue().toString());
+                updateItem(this.datePicker.getValue().toString(), isEmpty());
+                this.datePicker.getEditor().setText(this.datePicker.getValue().toString());
+                if (getTableRow().getIndex() != -1) {
+                    getTableView().getItems().get(getTableRow().getIndex()).setDueDate(this.datePicker.getValue().toString());
+                }
+
+            }
+
+
+        });
+
+        setGraphic(this.datePicker);
+        setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+        setEditable(true);
+    }
+    @Override
+    public void startEdit() {
+        super.startEdit();
+    }
+
+    @Override
+    public void cancelEdit() {
+        super.cancelEdit();
+        setContentDisplay(ContentDisplay.TEXT_ONLY);
+    }
+    @Override
+    protected void updateItem(String date, boolean empty) {
+        super.updateItem(date, empty);
+        this.datePicker.setVisible(!empty);
+
+        if (date != null && !date.isEmpty()) {
+            this.datePicker.setValue(LocalDate.parse(date));
+            this.datePicker.getEditor().setText(date);
+        }
+
+    }
+
 }
